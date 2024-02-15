@@ -21,9 +21,9 @@ public class TestController {
         return "test";
     }
 
-    @GetMapping("/test2")
-    public String test2() {
-        return "test2";
+    @GetMapping("/test5")
+    public String test5() {
+        return "test5";
     }
 
 
