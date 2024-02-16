@@ -35,8 +35,9 @@ public class GatewayConfig {
         return builder.routes()
                 .route("auth_route", r -> r.path("/auth/**")
                         .uri(urlProperties.getAuth()))
-                .route("resource_route", r -> r.path("/api/**")
-                        .uri(urlProperties.getResource()))
+                .route("resource-service", p -> p.path("/api/**").and()
+                        .uri("lb://RESOURCE-SERVICE")
+                )
                 .build();
     }
 }
