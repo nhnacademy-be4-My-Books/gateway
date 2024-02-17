@@ -26,7 +26,8 @@ public class GatewayConfig {
      * methodName : customRouteLocator
      * author : damho-lee
      * description : gateway 설정. 각각 해당하는 서버로 요청 보내준다.
-     *
+     * auth로 들어온 요청은 auth서버로 처리한다.
+     * resource 서버는 Eureka를 이용해 라운드 로빈 방식으로 동작한다.
      * @param builder .
      * @return route locator
      */
@@ -35,8 +36,9 @@ public class GatewayConfig {
         return builder.routes()
                 .route("auth_route", r -> r.path("/auth/**")
                         .uri(urlProperties.getAuth()))
-                .route("resource_route", r -> r.path("/api/**")
-                        .uri(urlProperties.getResource()))
+                .route("resource-service", p -> p.path("/api/**").and()
+                        .uri("lb://RESOURCE-SERVICE")
+                )
                 .build();
     }
 }
