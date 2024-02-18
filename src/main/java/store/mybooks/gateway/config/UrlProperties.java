@@ -22,4 +22,5 @@ import org.springframework.stereotype.Component;
 @Setter
 public class UrlProperties {
     private String auth;
+    private String resource1;
 }
