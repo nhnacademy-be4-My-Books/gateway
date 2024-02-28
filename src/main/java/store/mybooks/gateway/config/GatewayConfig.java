@@ -5,6 +5,7 @@ import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import store.mybooks.gateway.filter.UserAuthFilter;
 
 /**
  * packageName    : store.mybooks.gateway.config
@@ -37,7 +38,8 @@ public class GatewayConfig {
         return builder.routes()
                 .route("auth_route", r -> r.path("/auth/**")
                         .uri(urlProperties.getAuth()))
-                .route("resource-service", p -> p.path("/api/**").and()
+                .route("resource-service", p -> p.path("/api/**")
+                        .filters(f -> f.filter(new UserAuthFilter().apply(new UserAuthFilter.Config())))
                         .uri("lb://RESOURCE-SERVICE")
                 )
                 .build();
