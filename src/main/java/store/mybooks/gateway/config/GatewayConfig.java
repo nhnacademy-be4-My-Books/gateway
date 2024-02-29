@@ -38,11 +38,11 @@ public class GatewayConfig {
         return builder.routes()
                 .route("auth_server", r -> r.path("/auth/**")
                         .uri(urlProperties.getAuth()))
-                .route("api_server_user", p -> p.path("/api/user")
+                .route("api_server_user", p -> p.path("/api/user/**")
                         .filters(f -> f.filter(new UserAuthFilter().apply(new UserAuthFilter.Config())))
                         .uri("lb://RESOURCE-SERVICE")
                 )
-                .route("api_server_admin", p -> p.path("/api/admin")
+                .route("api_server_admin", p -> p.path("/api/admin/**")
                         //                todo admin auth filter 만들기
                         .uri("lb://RESOURCE-SERVICE")
                 )
