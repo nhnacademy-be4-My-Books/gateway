@@ -7,11 +7,14 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -33,6 +36,7 @@ import reactor.netty.http.server.HttpServerRequest;
  * 2/28/24        masiljangajji       최초 생성
  */
 @Component
+@Slf4j
 public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.Config> {
 
     public UserAuthFilter() {
@@ -58,6 +62,14 @@ public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.
                 }
             }
 
+
+            // todo 헤더에 담는게 좋을지 고민해보기
+            exchange.getRequest().mutate()
+                    .headers(httpHeaders -> {
+                        httpHeaders.add("ddd", "1");
+                    })
+                    .build();
+
             return chain.filter(exchange);
         };
     }
@@ -71,17 +83,16 @@ public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.
             Algorithm algorithm = Algorithm.HMAC512("이승재"); // todo 키 메니저 달아서 암호화
             JWTVerifier verifier = JWT.require(algorithm).build();
 
-            System.out.println("?@?@?@??@!?#!?@#?!#?!@?#?");
-
             // 일치하는지 확인
             DecodedJWT jwt = verifier.verify(token);
 
-            System.out.println(jwt.getClaim("authorization").asString());
-            System.out.println(jwt.getClaim("this").asInt());
-            System.out.println(jwt.getClaim("status").asString());
-
             String authorization = jwt.getClaim("authorization").asString();
             String status = jwt.getClaim("status").asString();
+
+            log.info(authorization);
+            log.info(status);
+            log.info(jwt.getClaim("this").asString());
+
 
             return authorization.equals("ROLE_USER") && status.equals("활성");
 
