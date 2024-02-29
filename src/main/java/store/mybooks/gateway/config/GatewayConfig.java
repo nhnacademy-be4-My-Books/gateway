@@ -36,10 +36,17 @@ public class GatewayConfig {
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
-                .route("auth_route", r -> r.path("/auth/**")
+                .route("auth_server", r -> r.path("/auth/**")
                         .uri(urlProperties.getAuth()))
-                .route("resource-service", p -> p.path("/api/**")
+                .route("api_server_user", p -> p.path("/api/user")
                         .filters(f -> f.filter(new UserAuthFilter().apply(new UserAuthFilter.Config())))
+                        .uri("lb://RESOURCE-SERVICE")
+                )
+                .route("api_server_admin", p -> p.path("/api/admin")
+                        //                todo admin auth filter 만들기
+                        .uri("lb://RESOURCE-SERVICE")
+                )
+                .route("api_server", p -> p.path("/api/**")
                         .uri("lb://RESOURCE-SERVICE")
                 )
                 .build();
