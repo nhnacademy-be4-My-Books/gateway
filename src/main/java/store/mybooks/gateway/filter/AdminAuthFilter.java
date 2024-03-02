@@ -1,6 +1,7 @@
 package store.mybooks.gateway.filter;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -42,8 +43,10 @@ public class AdminAuthFilter extends AbstractGatewayFilterFactory<AdminAuthFilte
                 TokenValidator.isValidAuthority(jwt, AdminAuthFilter.Config.STATUS_ACTIVE,
                         AdminAuthFilter.Config.ROLE_ADMIN);
 
-            } catch (JWTVerificationException e) { // 토큰 검증실패
-                return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.UNAUTHORIZED); // 토큰이 이상함 인증이 필요
+            } catch (TokenExpiredException e) {
+                return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.UNAUTHORIZED); // 토큰 만료됐음 인증 필요
+            } catch (JWTVerificationException e) {
+                return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.BAD_REQUEST); // 토큰이 조작됐음 올바르지 않은 요청
             } catch (InvalidPermissionException e) {
                 return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.FORBIDDEN); //  토큰은 유효한데 권한 없음
             }
@@ -54,6 +57,8 @@ public class AdminAuthFilter extends AbstractGatewayFilterFactory<AdminAuthFilte
 
             return chain.filter(exchange);
         };
+
+
     }
 
 

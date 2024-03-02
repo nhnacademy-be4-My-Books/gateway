@@ -1,6 +1,7 @@
 package store.mybooks.gateway.filter;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -9,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Mono;
 import store.mybooks.gateway.exception.InvalidPermissionException;
 import store.mybooks.gateway.handler.ErrorResponseHandler;
 import store.mybooks.gateway.utils.HttpUtils;
@@ -37,7 +37,6 @@ public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-            // 헤더에서 값을 읽어옴
 
             String token = HttpUtils.getAuthorizationHeaderValue(exchange);
             String originalPath = HttpUtils.getPath(exchange);
@@ -46,10 +45,12 @@ public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.
 
             try {
                 jwt = TokenValidator.isValidToken(token);
-                TokenValidator.isValidAuthority(jwt, Config.STATUS_ACTIVE, Config.ROLE_USER,Config.ROLE_ADMIN);
+                TokenValidator.isValidAuthority(jwt, Config.STATUS_ACTIVE, Config.ROLE_USER, Config.ROLE_ADMIN);
 
-            } catch (JWTVerificationException e) { // 토큰 검증실패
-                return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.UNAUTHORIZED); // 토큰이 이상함 인증이 필요
+            } catch (TokenExpiredException e) {
+                return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.UNAUTHORIZED); // 토큰 만료됐음 인증 필요
+            } catch (JWTVerificationException e) {
+                return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.BAD_REQUEST); // 토큰이 조작됐음 올바르지 않은 요청
             } catch (InvalidPermissionException e) {
                 return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.FORBIDDEN); //  토큰은 유효한데 권한 없음
             }
