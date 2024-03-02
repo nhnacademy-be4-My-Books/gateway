@@ -13,6 +13,6 @@ package store.mybooks.gateway.exception;
  */
 public class InvalidPermissionException extends RuntimeException{
     public InvalidPermissionException() {
-        super("유효하지 않은 접근");
+        super();
     }
 }
