@@ -21,8 +21,8 @@ import reactor.core.publisher.Mono;
 public class ErrorResponseHandler {
     public static Mono<Void> handleInvalidToken(ServerWebExchange exchange, String errorMessage) {
         ServerHttpResponse response = exchange.getResponse();
-        response.getHeaders().add("X-Error", errorMessage); // 예시로 Custom-Header에 errorMessage 추가
-        return response.setComplete();
+        response.setStatusCode(HttpStatus.FORBIDDEN);
+        return response.writeWith(Mono.just(response.bufferFactory().wrap(errorMessage.getBytes())));
     }
 
 
