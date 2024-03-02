@@ -6,7 +6,8 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import java.util.Arrays;
-import store.mybooks.gateway.exception.InvalidPermissionException;
+import store.mybooks.gateway.exception.ForbiddenAccessException;
+import store.mybooks.gateway.exception.InvalidStatusException;
 
 /**
  * packageName    : store.mybooks.gateway.validator<br>
@@ -19,6 +20,7 @@ import store.mybooks.gateway.exception.InvalidPermissionException;
  * -----------------------------------------------------------
  * 3/2/24        masiljangajji       최초 생성
  */
+
 public class TokenValidator {
 
     private static final JWTVerifier jwtVerifier;
@@ -28,14 +30,20 @@ public class TokenValidator {
         jwtVerifier = JWT.require(algorithm).build();
     }
 
-    public static void isValidAuthority(DecodedJWT jwt, String userStatus,String ...authority) {
+    public static void isValidAuthority(DecodedJWT jwt, String userStatus, String... authority) {
 
         String authorization = jwt.getClaim("authority").asString();
         String status = jwt.getClaim("status").asString();
 
-        // 권한 및 상태확인
-        if (!Arrays.asList(authority).contains(authorization) || !status.equals(userStatus)) {
-            throw new InvalidPermissionException();
+
+        // 활성상태아니면 throw
+        if (!status.equals(userStatus)) {
+            throw new InvalidStatusException();
+        }
+
+        // 권한 확인
+        if (!Arrays.asList(authority).contains(authorization)) {
+            throw new ForbiddenAccessException();
         }
 
     }
