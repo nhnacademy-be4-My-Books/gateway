@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+import store.mybooks.gateway.error.ErrorMessage;
 import store.mybooks.gateway.exception.InvalidPermissionException;
 import store.mybooks.gateway.handler.ErrorResponseHandler;
 import store.mybooks.gateway.utils.HttpUtils;
@@ -26,7 +27,6 @@ import store.mybooks.gateway.validator.TokenValidator;
  * -----------------------------------------------------------
  * 2/28/24        masiljangajji       최초 생성
  */
-@Component
 @Slf4j
 public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.Config> {
 
@@ -48,11 +48,14 @@ public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.
                 TokenValidator.isValidAuthority(jwt, Config.STATUS_ACTIVE, Config.ROLE_USER, Config.ROLE_ADMIN);
 
             } catch (TokenExpiredException e) {
-                return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.UNAUTHORIZED); // 토큰 만료됐음 인증 필요
+                return ErrorResponseHandler.handleInvalidToken(exchange,
+                        ErrorMessage.TOKEN_EXPIRED.getMessage()); // 토큰 만료됐음 인증 필요
             } catch (JWTVerificationException e) {
-                return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.BAD_REQUEST); // 토큰이 조작됐음 올바르지 않은 요청
+                return ErrorResponseHandler.handleInvalidToken(exchange,
+                        ErrorMessage.INVALID_TOKEN.getMessage()); // 토큰이 조작됐음 올바르지 않은 요청
             } catch (InvalidPermissionException e) {
-                return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.FORBIDDEN); //  토큰은 유효한데 권한 없음
+                return ErrorResponseHandler.handleInvalidToken(exchange,
+                        ErrorMessage.INVALID_ACCESS.getMessage()); //  토큰은 유효한데 권한 없음
             }
 
             ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
