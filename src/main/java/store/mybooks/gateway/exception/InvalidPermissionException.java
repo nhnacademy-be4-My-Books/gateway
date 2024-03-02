@@ -1,0 +1,18 @@
+package store.mybooks.gateway.exception;
+
+/**
+ * packageName    : store.mybooks.gateway.exception<br>
+ * fileName       : TokenNotValidException<br>
+ * author         : masiljangajji<br>
+ * date           : 3/2/24<br>
+ * description    :
+ * ===========================================================
+ * DATE              AUTHOR             NOTE
+ * -----------------------------------------------------------
+ * 3/2/24        masiljangajji       최초 생성
+ */
+public class InvalidPermissionException extends RuntimeException{
+    public InvalidPermissionException() {
+        super("유효하지 않은 접근");
+    }
+}
