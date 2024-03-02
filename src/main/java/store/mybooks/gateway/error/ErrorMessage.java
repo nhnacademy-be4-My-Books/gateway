@@ -17,7 +17,8 @@ import lombok.Getter;
 public enum ErrorMessage {
     TOKEN_EXPIRED("Token has expired"),
     INVALID_TOKEN("Invalid token"),
-    INVALID_ACCESS("Access forbidden");
+    INVALID_ACCESS("Access forbidden"),
+    INACTIVE_USER("User is inactive");
 
     private final String message;
 
