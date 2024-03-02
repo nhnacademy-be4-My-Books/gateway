@@ -7,7 +7,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpStatus;
 import store.mybooks.gateway.error.ErrorMessage;
-import store.mybooks.gateway.exception.InvalidPermissionException;
+import store.mybooks.gateway.exception.ForbiddenAccessException;
 import store.mybooks.gateway.handler.ErrorResponseHandler;
 import store.mybooks.gateway.utils.HttpUtils;
 import store.mybooks.gateway.validator.TokenValidator;
@@ -45,14 +45,14 @@ public class AdminAuthFilter extends AbstractGatewayFilterFactory<AdminAuthFilte
                         AdminAuthFilter.Config.ROLE_ADMIN);
 
             } catch (TokenExpiredException e) {
-                return ErrorResponseHandler.handleInvalidToken(exchange,
-                        ErrorMessage.TOKEN_EXPIRED.getMessage()); // 토큰 만료됐음 인증 필요
+                return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.UNAUTHORIZED,
+                        ErrorMessage.TOKEN_EXPIRED.getMessage()); // 토큰 만료됐음 인증 필요 401
             } catch (JWTVerificationException e) {
-                return ErrorResponseHandler.handleInvalidToken(exchange,
-                        ErrorMessage.INVALID_TOKEN.getMessage()); // 토큰이 조작됐음 올바르지 않은 요청
-            } catch (InvalidPermissionException e) {
-                return ErrorResponseHandler.handleInvalidToken(exchange,
-                        ErrorMessage.INVALID_ACCESS.getMessage()); //  토큰은 유효한데 권한 없음
+                return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.UNAUTHORIZED,
+                        ErrorMessage.INVALID_TOKEN.getMessage()); // 토큰이 조작됐음 올바르지 않은 요청 401
+            } catch (ForbiddenAccessException e) {
+                return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.FORBIDDEN,
+                        ErrorMessage.INVALID_ACCESS.getMessage()); //  토큰은 유효한데 권한 없음 403
             }
 
             exchange.getRequest().mutate()
