@@ -1,6 +1,8 @@
 package store.mybooks.gateway.handler;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -15,9 +17,13 @@ import reactor.core.publisher.Mono;
  * -----------------------------------------------------------
  * 3/2/24        masiljangajji       최초 생성
  */
+
 public class ErrorResponseHandler {
-    public static Mono<Void> handleInvalidToken(ServerWebExchange exchange,HttpStatus status) {
-        exchange.getResponse().setStatusCode(status);
-        return exchange.getResponse().setComplete();
+    public static Mono<Void> handleInvalidToken(ServerWebExchange exchange, String errorMessage) {
+        ServerHttpResponse response = exchange.getResponse();
+        response.getHeaders().add("X-Error", errorMessage); // 예시로 Custom-Header에 errorMessage 추가
+        return response.setComplete();
     }
+
+
 }
