@@ -1,10 +1,12 @@
 package store.mybooks.gateway.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import store.mybooks.gateway.filter.AdminAuthFilter;
 import store.mybooks.gateway.filter.UserAuthFilter;
 
 /**
@@ -36,17 +38,17 @@ public class GatewayConfig {
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
-                .route("auth_server", r -> r.path("/auth/**")
+                .route("auth", r -> r.path("/auth/**") // 전부 허용 할 것
                         .uri(urlProperties.getAuth()))
-                .route("api_server_user", p -> p.path("/api/user/**")
+                .route("api_user", p -> p.path("/api/member/**") // 유저 권한이 필요 한 경우
                         .filters(f -> f.filter(new UserAuthFilter().apply(new UserAuthFilter.Config())))
                         .uri("lb://RESOURCE-SERVICE")
                 )
-                .route("api_server_admin", p -> p.path("/api/admin/**")
-                        //                todo admin auth filter 만들기
+                .route("api_admin", p -> p.path("/api/admin/**") // 어드민 권한이 필요 한 경우
+                        .filters(f->f.filter(new AdminAuthFilter().apply(new AdminAuthFilter.Config())))
                         .uri("lb://RESOURCE-SERVICE")
                 )
-                .route("api_server", p -> p.path("/api/**")
+                .route("api_all", p -> p.path("/api/**") // 권한이 필요 없는 경우
                         .uri("lb://RESOURCE-SERVICE")
                 )
                 .build();
