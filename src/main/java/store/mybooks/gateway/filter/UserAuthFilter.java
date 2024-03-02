@@ -1,28 +1,19 @@
 package store.mybooks.gateway.filter;
 
-import static javax.crypto.Cipher.SECRET_KEY;
-
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpResponse;
-import org.springframework.stereotype.Component;
-import org.springframework.cloud.gateway.filter.GatewayFilter;
-import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-import reactor.netty.http.server.HttpServerRequest;
+import store.mybooks.gateway.exception.InvalidPermissionException;
+import store.mybooks.gateway.handler.ErrorResponseHandler;
+import store.mybooks.gateway.utils.HttpUtils;
+import store.mybooks.gateway.validator.TokenValidator;
 
 /**
  * packageName    : store.mybooks.gateway.filter<br>
@@ -48,60 +39,38 @@ public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.
         return (exchange, chain) -> {
             // 헤더에서 값을 읽어옴
 
-            ServerHttpRequest request = exchange.getRequest();
+            String token = HttpUtils.getAuthorizationHeaderValue(exchange);
+            String originalPath = HttpUtils.getPath(exchange);
 
-            String token = request.getHeaders().getFirst("token");
+            DecodedJWT jwt;
 
-            String path = exchange.getRequest().getURI().getPath();
+            try {
+                jwt = TokenValidator.isValidToken(token);
+                TokenValidator.isValidAuthority(jwt, Config.STATUS_ACTIVE, Config.ROLE_USER,Config.ROLE_ADMIN);
 
-            if (!path.equals("/api/users/login")) {
-                // 헤더에 token 이 없거나 값이 유효하지 않으면 403 에러 반환
-                if (token == null || !isValidToken(token)) {
-                    exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
-                    return exchange.getResponse().setComplete(); // 여기서 return을 추가하여 더 이상의 필터 체인을 진행하지 않도록 설정
-                }
+            } catch (JWTVerificationException e) { // 토큰 검증실패
+                return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.UNAUTHORIZED); // 토큰이 이상함 인증이 필요
+            } catch (InvalidPermissionException e) {
+                return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.FORBIDDEN); //  토큰은 유효한데 권한 없음
             }
 
-
-            // todo 헤더에 담는게 좋을지 고민해보기
-            exchange.getRequest().mutate()
-                    .headers(httpHeaders -> {
-                        httpHeaders.add("ddd", "1");
-                    })
+            ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
+                    .path(originalPath.replace("/api/member/", "/api/")) // 새로운 URL 경로 설정
+                    .header("X-User-Id", jwt.getSubject()) // 유저 정보 보내기
                     .build();
 
-            return chain.filter(exchange);
+            ServerWebExchange modifiedExchange = exchange.mutate()
+                    .request(modifiedRequest)
+                    .build();
+
+            return chain.filter(modifiedExchange);
         };
     }
 
-
-    private boolean isValidToken(String token) {
-
-        try {
-
-            // 알고리즘과 비밀 키로 JWTVerifier 생성
-            Algorithm algorithm = Algorithm.HMAC512("이승재"); // todo 키 메니저 달아서 암호화
-            JWTVerifier verifier = JWT.require(algorithm).build();
-
-            // 일치하는지 확인
-            DecodedJWT jwt = verifier.verify(token);
-
-            String authorization = jwt.getClaim("authorization").asString();
-            String status = jwt.getClaim("status").asString();
-
-            log.info(authorization);
-            log.info(status);
-            log.info(jwt.getClaim("this").asString());
-
-
-            return authorization.equals("ROLE_USER") && status.equals("활성");
-
-        } catch (JWTVerificationException exception) {  // 검증 실패 시, 예외 처리
-            return false;
-        }
-    }
-
     public static class Config { // // 필요한 전달할 설정
+        private static final String ROLE_USER = "ROLE_USER";
+        private static final String ROLE_ADMIN = "ROLE_ADMIN";
+        private static final String STATUS_ACTIVE = "활성";
     }
 }
 
