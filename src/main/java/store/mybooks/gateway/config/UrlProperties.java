@@ -1,7 +1,9 @@
 package store.mybooks.gateway.config;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -16,10 +18,15 @@ import org.springframework.stereotype.Component;
  * -----------------------------------------------------------
  * 2/16/24          damho-lee          최초 생성
  */
-@Component
-@ConfigurationProperties(prefix = "url.name")
+
 @Getter
-@Setter
+@RequiredArgsConstructor
+@ConfigurationProperties(prefix = "url.name")
 public class UrlProperties {
     private String auth;
+    private final KeyConfig keyConfig;
+
+    public void setAuth(String auth) {
+        this.auth = keyConfig.keyStore(auth);
+    }
 }
