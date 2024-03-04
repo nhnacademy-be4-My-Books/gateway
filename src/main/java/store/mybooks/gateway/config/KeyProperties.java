@@ -1,8 +1,12 @@
 package store.mybooks.gateway.config;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
 /**
  * packageName    : store.mybooks.resource.config
- * fileName       : KeyMangerException
+ * fileName       : KeyProperties
  * author         : Fiat_lux
  * date           : 2/20/24
  * description    :
@@ -11,8 +15,12 @@ package store.mybooks.gateway.config;
  * -----------------------------------------------------------
  * 2/20/24        Fiat_lux       최초 생성
  */
-public class KeyMangerException extends RuntimeException {
-    public KeyMangerException(String message) {
-        super(message);
-    }
+@Getter
+@Setter
+@ConfigurationProperties(prefix = "key.manager")
+public class KeyProperties {
+    private String url;
+    private String path;
+    private String appKey;
+    private String password;
 }

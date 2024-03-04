@@ -18,7 +18,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.bootstrap.encrypt.KeyProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
@@ -30,23 +29,23 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
- * packageName    : store.mybooks.front.config
+ * packageName    : store.mybooks.resource.config
  * fileName       : KeyConfig
  * author         : Fiat_lux
- * date           : 3/03/24
+ * date           : 2/20/24
  * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 3/03/24        Fiat_lux       최초 생성
+ * 2/20/24        Fiat_lux       최초 생성
  */
 @Configuration
 public class KeyConfig {
 
-    private final KeyManagerProperties keyProperties;
+    private final KeyProperties keyProperties;
 
     @Autowired
-    public KeyConfig(KeyManagerProperties keyProperties) {
+    public KeyConfig(KeyProperties keyProperties) {
         this.keyProperties = keyProperties;
     }
 
