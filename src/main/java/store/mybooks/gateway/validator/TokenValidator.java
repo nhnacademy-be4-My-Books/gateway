@@ -7,11 +7,9 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import store.mybooks.gateway.config.JwtConfig;
 import store.mybooks.gateway.config.KeyConfig;
-import store.mybooks.gateway.config.KeyManagerProperties;
 import store.mybooks.gateway.exception.ForbiddenAccessException;
 import store.mybooks.gateway.exception.InvalidStatusException;
 
@@ -26,14 +24,12 @@ import store.mybooks.gateway.exception.InvalidStatusException;
  * -----------------------------------------------------------
  * 3/2/24        masiljangajji       최초 생성
  */
-
+@Component
 public class TokenValidator {
 
-    private static JWTVerifier jwtVerifier;
-    public TokenValidator(ApplicationContext context) {
-        JwtConfig jwtConfig = context.getBean(JwtConfig.class);
-        KeyConfig keyConfig = context.getBean(KeyConfig.class);
-
+    private static JWTVerifier jwtVerifier = null;
+    @Autowired
+    public TokenValidator(JwtConfig jwtConfig, KeyConfig keyConfig) {
         Algorithm algorithm = Algorithm.HMAC512(keyConfig.keyStore(jwtConfig.getSecret()));
         jwtVerifier = JWT.require(algorithm).build();
     }
@@ -42,7 +38,6 @@ public class TokenValidator {
 
         String authorization = jwt.getClaim("authority").asString();
         String status = jwt.getClaim("status").asString();
-
 
         // 활성상태아니면 throw
         if (!status.equals(userStatus)) {
