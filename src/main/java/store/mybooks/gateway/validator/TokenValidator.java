@@ -6,6 +6,12 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import java.util.Arrays;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
+import store.mybooks.gateway.config.JwtConfig;
+import store.mybooks.gateway.config.KeyConfig;
+import store.mybooks.gateway.config.KeyManagerProperties;
 import store.mybooks.gateway.exception.ForbiddenAccessException;
 import store.mybooks.gateway.exception.InvalidStatusException;
 
@@ -23,10 +29,12 @@ import store.mybooks.gateway.exception.InvalidStatusException;
 
 public class TokenValidator {
 
-    private static final JWTVerifier jwtVerifier;
+    private static JWTVerifier jwtVerifier;
+    public TokenValidator(ApplicationContext context) {
+        JwtConfig jwtConfig = context.getBean(JwtConfig.class);
+        KeyConfig keyConfig = context.getBean(KeyConfig.class);
 
-    static {
-        Algorithm algorithm = Algorithm.HMAC512("이승재"); // todo 키 메니저 달아서 암호화
+        Algorithm algorithm = Algorithm.HMAC512(keyConfig.keyStore(jwtConfig.getSecret()));
         jwtVerifier = JWT.require(algorithm).build();
     }
 
