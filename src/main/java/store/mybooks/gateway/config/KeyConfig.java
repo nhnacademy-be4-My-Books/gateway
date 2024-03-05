@@ -18,6 +18,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.bootstrap.encrypt.KeyProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
@@ -42,10 +43,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Configuration
 public class KeyConfig {
 
-    private final KeyProperties keyProperties;
+    private final KeyManagerProperties keyProperties;
 
     @Autowired
-    public KeyConfig(KeyProperties keyProperties) {
+    public KeyConfig(KeyManagerProperties keyProperties) {
         this.keyProperties = keyProperties;
     }
 
