@@ -19,7 +19,8 @@ import reactor.core.publisher.Mono;
  */
 
 public class ErrorResponseHandler {
-    public static Mono<Void> handleInvalidToken(ServerWebExchange exchange, HttpStatus httpStatus,String errorMessage) {
+    public static Mono<Void> handleInvalidToken(ServerWebExchange exchange, HttpStatus httpStatus,
+                                                String errorMessage) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(httpStatus);
         return response.writeWith(Mono.just(response.bufferFactory().wrap(errorMessage.getBytes())));

@@ -11,7 +11,7 @@ package store.mybooks.gateway.exception;
  * -----------------------------------------------------------
  * 3/2/24        masiljangajji       최초 생성
  */
-public class ForbiddenAccessException extends RuntimeException{
+public class ForbiddenAccessException extends RuntimeException {
     public ForbiddenAccessException() {
         super();
     }

@@ -28,6 +28,7 @@ import store.mybooks.gateway.exception.InvalidStatusException;
 public class TokenValidator {
 
     private static JWTVerifier jwtVerifier = null;
+
     @Autowired
     public TokenValidator(JwtConfig jwtConfig, KeyConfig keyConfig) {
         Algorithm algorithm = Algorithm.HMAC512(keyConfig.keyStore(jwtConfig.getSecret()));
