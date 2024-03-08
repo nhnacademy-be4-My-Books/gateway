@@ -3,7 +3,6 @@ package store.mybooks.gateway.filter;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpStatus;
@@ -18,25 +17,25 @@ import store.mybooks.gateway.validator.TokenValidator;
 
 /**
  * packageName    : store.mybooks.gateway.filter<br>
- * fileName       : UserAuthFilter<br>
+ * fileName       : AdminAuthFilter<br>
  * author         : masiljangajji<br>
- * date           : 2/28/24<br>
+ * date           : 3/2/24<br>
  * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2/28/24        masiljangajji       최초 생성
+ * 3/2/24        masiljangajji       최초 생성
  */
-@Slf4j
-public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.Config> {
+public class AdminAuthFilter extends AbstractGatewayFilterFactory<AdminAuthFilter.Config> {
 
-    public UserAuthFilter() {
+    public AdminAuthFilter() {
         super(Config.class);
     }
 
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
+            // 헤더에서 값을 읽어옴
 
             String token = HttpUtils.getAuthorizationHeaderValue(exchange);
             String originalPath = HttpUtils.getPath(exchange);
@@ -44,10 +43,8 @@ public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.
             DecodedJWT jwt;
 
             try {
-
                 jwt = TokenValidator.isValidToken(token);
-                TokenValidator.isValidAuthority(jwt, Config.STATUS_ACTIVE, Config.ROLE_USER, Config.ROLE_ADMIN);
-
+                TokenValidator.isValidAuthority(jwt, Config.STATUS_ACTIVE, Config.ROLE_ADMIN);
 
             } catch (InvalidStatusException e) {
                 return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.FORBIDDEN,
@@ -64,8 +61,7 @@ public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.
             }
 
             ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
-                    .path(originalPath.replace("/api/member/", "/api/")) // 새로운 URL 경로 설정
-                    .header("X-User-Id", jwt.getSubject()) // 유저 정보 보내기
+                    .path(originalPath.replace("/api/admin/", "/api/")) // 새로운 URL 경로 설정
                     .build();
 
             ServerWebExchange modifiedExchange = exchange.mutate()
@@ -74,12 +70,13 @@ public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.
 
             return chain.filter(modifiedExchange);
         };
+
+
     }
 
+
     public static class Config { // // 필요한 전달할 설정
-        private static final String ROLE_USER = "ROLE_USER";
         private static final String ROLE_ADMIN = "ROLE_ADMIN";
         private static final String STATUS_ACTIVE = "활성";
     }
 }
-
