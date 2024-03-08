@@ -46,7 +46,7 @@ public class TokenValidator {
         }
 
         // 권한 확인
-        if (!Arrays.asList(authority).contains(authorization)) {
+        if (Arrays.stream(authority).noneMatch(auth -> auth.equals(authorization))) {
             throw new ForbiddenAccessException();
         }
 
