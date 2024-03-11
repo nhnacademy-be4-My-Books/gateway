@@ -11,6 +11,8 @@ import org.springframework.web.server.ServerWebExchange;
 import store.mybooks.gateway.error.ErrorMessage;
 import store.mybooks.gateway.exception.ForbiddenAccessException;
 import store.mybooks.gateway.exception.InvalidStatusException;
+import store.mybooks.gateway.exception.StatusIsDormancyException;
+import store.mybooks.gateway.exception.StatusIsLockException;
 import store.mybooks.gateway.handler.ErrorResponseHandler;
 import store.mybooks.gateway.utils.HttpUtils;
 import store.mybooks.gateway.validator.TokenValidator;
@@ -44,11 +46,17 @@ public class AdminAuthFilter extends AbstractGatewayFilterFactory<AdminAuthFilte
 
             try {
                 jwt = TokenValidator.isValidToken(token);
-                TokenValidator.isValidAuthority(jwt, Config.STATUS_ACTIVE, Config.ROLE_ADMIN);
+                String status = jwt.getClaim("status").asString();
 
-            } catch (InvalidStatusException e) {
+                TokenValidator.isValidStatus(status);
+                TokenValidator.isValidAuthority(jwt.getClaim("authority").asString(), Config.ROLE_ADMIN);
+
+            } catch (StatusIsDormancyException e) {
                 return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.FORBIDDEN,
-                        ErrorMessage.INACTIVE_USER.getMessage()); //  토큰은 유효한데 활성 상태 아님
+                        ErrorMessage.STATUS_IS_DORMANT_EXCEPTION.getMessage()); //  토큰은 유효한데 휴면 상태임
+            } catch (StatusIsLockException e) {
+                return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.FORBIDDEN,
+                        ErrorMessage.STATUS_IS_LOCK_EXCEPTION.getMessage()); //  토큰은 유효한데 잠금 상태임
             } catch (ForbiddenAccessException e) {
                 return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.FORBIDDEN,
                         ErrorMessage.INVALID_ACCESS.getMessage()); //  토큰은 유효한데 권한 없음 403
@@ -77,6 +85,5 @@ public class AdminAuthFilter extends AbstractGatewayFilterFactory<AdminAuthFilte
 
     public static class Config { // // 필요한 전달할 설정
         private static final String ROLE_ADMIN = "ROLE_ADMIN";
-        private static final String STATUS_ACTIVE = "활성";
     }
 }
