@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import store.mybooks.gateway.filter.AdminAuthFilter;
 import store.mybooks.gateway.filter.UserAuthFilter;
+import store.mybooks.gateway.redis.RedisService;
 
 /**
  * packageName    : store.mybooks.gateway.config
@@ -24,6 +25,8 @@ import store.mybooks.gateway.filter.UserAuthFilter;
 @RequiredArgsConstructor
 public class GatewayConfig {
     private final UrlProperties urlProperties;
+
+    private final RedisService redisService;
 
     private static final String RESOURCE = "lb://RESOURCE-SERVICE";
 
@@ -43,7 +46,7 @@ public class GatewayConfig {
                 .route("auth", r -> r.path("/auth/**") // 전부 허용 할 것
                         .uri(urlProperties.getAuth()))
                 .route("api_user", p -> p.path("/api/member/**") // 유저 권한이 필요 한 경우
-                        .filters(f -> f.filter(new UserAuthFilter().apply(new UserAuthFilter.Config())))
+                        .filters(f -> f.filter(new UserAuthFilter(redisService).apply(new UserAuthFilter.Config())))
                         .uri(RESOURCE)
                 )
                 .route("api_admin", p -> p.path("/api/admin/**") // 어드민 권한이 필요 한 경우
