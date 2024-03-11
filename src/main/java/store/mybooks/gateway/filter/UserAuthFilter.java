@@ -4,11 +4,14 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import java.util.Arrays;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.RSAUtil;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import store.mybooks.gateway.error.ErrorMessage;
 import store.mybooks.gateway.exception.ForbiddenAccessException;
@@ -16,6 +19,7 @@ import store.mybooks.gateway.exception.InvalidStatusException;
 import store.mybooks.gateway.exception.StatusIsDormancyException;
 import store.mybooks.gateway.exception.StatusIsLockException;
 import store.mybooks.gateway.handler.ErrorResponseHandler;
+import store.mybooks.gateway.redis.RedisService;
 import store.mybooks.gateway.utils.HttpUtils;
 import store.mybooks.gateway.validator.TokenValidator;
 
@@ -33,8 +37,11 @@ import store.mybooks.gateway.validator.TokenValidator;
 @Slf4j
 public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.Config> {
 
-    public UserAuthFilter() {
+    private final RedisService redisService;
+
+    public UserAuthFilter(RedisService redisService) {
         super(Config.class);
+        this.redisService = redisService;
     }
 
     @Override
@@ -75,9 +82,12 @@ public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.
                         ErrorMessage.INVALID_TOKEN.getMessage()); // 토큰이 조작됐음 올바르지 않은 요청 401
             }
 
+            String key = jwt.getSubject() + exchange.getRequest().getRemoteAddress();
+
             ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
                     .path(originalPath.replace("/api/member/", "/api/")) // 새로운 URL 경로 설정
-                    .header("X-User-Id", jwt.getSubject()) // 유저 정보 보내기
+                    .header("X-User-Id", redisService.getValues(
+                            key.replaceFirst("/", "").split(":")[0])) // 유저 정보 보내기
                     .build();
 
             ServerWebExchange modifiedExchange = exchange.mutate()
@@ -93,7 +103,6 @@ public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.
         private static final String ROLE_ADMIN = "ROLE_ADMIN";
 
         private static final String[] EXCLUDE_STATUS_URL = {"/dormancy", "/lock"};
-
     }
 }
 
