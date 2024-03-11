@@ -12,6 +12,8 @@ import store.mybooks.gateway.config.JwtConfig;
 import store.mybooks.gateway.config.KeyConfig;
 import store.mybooks.gateway.exception.ForbiddenAccessException;
 import store.mybooks.gateway.exception.InvalidStatusException;
+import store.mybooks.gateway.exception.StatusIsDormancyException;
+import store.mybooks.gateway.exception.StatusIsLockException;
 
 /**
  * packageName    : store.mybooks.gateway.validator<br>
@@ -29,27 +31,37 @@ public class TokenValidator {
 
     private static JWTVerifier jwtVerifier = null;
 
+    private static final String STATUS_DORMANCY = "휴면";
+    private static final String STATUS_LOCK = "잠금";
+
+    private static final String STATUS_ACTIVE = "활성";
+
     @Autowired
     public TokenValidator(JwtConfig jwtConfig, KeyConfig keyConfig) {
         Algorithm algorithm = Algorithm.HMAC512(keyConfig.keyStore(jwtConfig.getSecret()));
         jwtVerifier = JWT.require(algorithm).build();
     }
 
-    public static void isValidAuthority(DecodedJWT jwt, String userStatus, String... authority) {
+    public static void isValidStatus(String status) {
 
-        String authorization = jwt.getClaim("authority").asString();
-        String status = jwt.getClaim("status").asString();
-
-        // 활성상태아니면 throw
-        if (!status.equals(userStatus)) {
-            throw new InvalidStatusException();
+        // 휴면상태
+        if (status.equals(STATUS_DORMANCY)) {
+            throw new StatusIsDormancyException();
+            // 잠금상태
+        } else if (status.equals(STATUS_LOCK)) {
+            throw new StatusIsLockException();
+        } else if (!status.equals(STATUS_ACTIVE)) {
+            throw new JWTVerificationException("토큰 조작");
         }
+
+    }
+
+    public static void isValidAuthority(String userAuth, String... authority) {
 
         // 권한 확인
-        if (Arrays.stream(authority).noneMatch(auth -> auth.equals(authorization))) {
+        if (Arrays.stream(authority).noneMatch(auth -> auth.equals(userAuth))) {
             throw new ForbiddenAccessException();
         }
-
     }
 
     public static DecodedJWT isValidToken(String token) throws JWTVerificationException {
