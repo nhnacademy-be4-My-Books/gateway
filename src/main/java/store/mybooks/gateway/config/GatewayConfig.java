@@ -25,6 +25,8 @@ import store.mybooks.gateway.filter.UserAuthFilter;
 public class GatewayConfig {
     private final UrlProperties urlProperties;
 
+    private static final String RESOURCE = "lb://RESOURCE-SERVICE";
+
     /**
      * methodName : customRouteLocator
      * author : damho-lee
@@ -42,14 +44,14 @@ public class GatewayConfig {
                         .uri(urlProperties.getAuth()))
                 .route("api_user", p -> p.path("/api/member/**") // 유저 권한이 필요 한 경우
                         .filters(f -> f.filter(new UserAuthFilter().apply(new UserAuthFilter.Config())))
-                        .uri("lb://RESOURCE-SERVICE")
+                        .uri(RESOURCE)
                 )
                 .route("api_admin", p -> p.path("/api/admin/**") // 어드민 권한이 필요 한 경우
                         .filters(f -> f.filter(new AdminAuthFilter().apply(new AdminAuthFilter.Config())))
-                        .uri("lb://RESOURCE-SERVICE")
+                        .uri(RESOURCE)
                 )
                 .route("api_all", p -> p.path("/api/**") // 권한이 필요 없는 경우
-                        .uri("lb://RESOURCE-SERVICE")
+                        .uri(RESOURCE)
                 )
                 .build();
     }
