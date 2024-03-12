@@ -50,7 +50,7 @@ public class GatewayConfig {
                         .uri(RESOURCE)
                 )
                 .route("api_admin", p -> p.path("/api/admin/**") // 어드민 권한이 필요 한 경우
-                        .filters(f -> f.filter(new AdminAuthFilter().apply(new AdminAuthFilter.Config())))
+                        .filters(f -> f.filter(new AdminAuthFilter(redisService).apply(new AdminAuthFilter.Config())))
                         .uri(RESOURCE)
                 )
                 .route("api_all", p -> p.path("/api/**") // 권한이 필요 없는 경우
