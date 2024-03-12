@@ -24,6 +24,9 @@ public class HttpUtils {
     public static String getAuthorizationHeaderValue(ServerWebExchange exchange) {
         return exchange.getRequest().getHeaders().getFirst("Authorization");
     }
+    public static String getUserAgentHeaderValue(ServerWebExchange exchange) {
+        return exchange.getRequest().getHeaders().getFirst("UserAgent");
+    }
 
     public static String getPath(ServerWebExchange exchange) {
         return exchange.getRequest().getURI().getPath();
