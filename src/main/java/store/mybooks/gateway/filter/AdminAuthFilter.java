@@ -54,8 +54,8 @@ public class AdminAuthFilter extends AbstractGatewayFilterFactory<AdminAuthFilte
 
             DecodedJWT jwt;
             String userAgent = exchange.getRequest().getHeaders().getFirst("User-Agent");
-
             log.warn(exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()+"아이피");
+            log.warn(exchange.getRequest().getHeaders().getFirst("X-Forwarded-For")+"헤더");
             log.warn(userAgent+"유저에이전트");
 
             try {

@@ -57,6 +57,8 @@ public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.
 
             log.warn(exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()+"아이피");
             log.warn(userAgent+"유저에이전트");
+            log.warn(exchange.getRequest().getHeaders().getFirst("X-Forwarded-For")+"헤더");
+
             try {
                 jwt = TokenValidator.isValidToken(token);
 
