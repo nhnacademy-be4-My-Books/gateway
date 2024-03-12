@@ -32,10 +32,6 @@ public class HttpUtils {
         return exchange.getRequest().getHeaders().getFirst("UserIp");
     }
 
-    public static String getUserIpHeaderValue2(ServerWebExchange exchange) {
-        return exchange.getRequest().getHeaders().getFirst("UserIp2");
-    }
-
     public static String getPath(ServerWebExchange exchange) {
         return exchange.getRequest().getURI().getPath();
     }
