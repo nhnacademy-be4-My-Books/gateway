@@ -53,23 +53,18 @@ public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.
             String originalPath = HttpUtils.getPath(exchange);
 
             DecodedJWT jwt;
-            String userAgent = exchange.getRequest().getHeaders().getFirst("User-Agent");
-
-            log.warn(exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()+"아이피");
-            log.warn(userAgent+"유저에이전트");
-            log.warn(exchange.getRequest().getHeaders().getFirst("X-Forwarded-For")+"헤더");
+            String userAgent = HttpUtils.getUserAgentHeaderValue(exchange);
+            String ip = HttpUtils.getUserIpHeaderValue(exchange);
 
             try {
                 jwt = TokenValidator.isValidToken(token);
 
-                String key = jwt.getSubject() +
-                        Objects.requireNonNull(exchange.getRequest().getRemoteAddress()).getAddress().getHostAddress() +
-                        userAgent;
+                String key = jwt.getSubject() + ip + userAgent;
+
 
                 // 레디스에 유저 아이디 담은 정보가 없다면 , 이미 로그아웃 한 것 따라서 유효하지 않은 토큰으로 보겠음
                 if (Objects.isNull(redisService.getValues(key))) {
                     log.warn("레디스에 유저 아이디 담은 정보가 없음");
-
                     throw new JWTVerificationException("Logout Token");
                 }
 

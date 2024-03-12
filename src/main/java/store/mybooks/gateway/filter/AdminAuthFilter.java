@@ -40,7 +40,7 @@ public class AdminAuthFilter extends AbstractGatewayFilterFactory<AdminAuthFilte
 
     public AdminAuthFilter(RedisService redisService) {
         super(Config.class);
-        this.redisService= redisService;
+        this.redisService = redisService;
     }
 
     @Override
@@ -51,30 +51,15 @@ public class AdminAuthFilter extends AbstractGatewayFilterFactory<AdminAuthFilte
             String token = HttpUtils.getAuthorizationHeaderValue(exchange);
             String originalPath = HttpUtils.getPath(exchange);
 
-            ServerHttpRequest request = exchange.getRequest();
 
             DecodedJWT jwt;
-            String userAgent = exchange.getRequest().getHeaders().getFirst("User-Agent");
-            log.warn(exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()+"아이피");
-            log.warn(exchange.getRequest().getHeaders().getFirst("X-Forwarded-For")+"헤더");
-            log.warn(request.getHeaders().getFirst("Proxy-Client-IP"));
-            log.warn(request.getHeaders().getFirst("WL-Proxy-Client-IP"));
-            log.warn(request.getHeaders().getFirst("HTTP_CLIENT_IP"));
-            log.warn(request.getHeaders().getFirst("HTTP_X_FORWARDED_FOR"));
-            log.warn(request.getHeaders().getFirst("X-Real-IP"));
-            log.warn(request.getHeaders().getFirst("X-RealIP"));
-            log.warn(request.getHeaders().getFirst("REMOTE_ADDR"));
-            log.warn(userAgent+"유저에이전트");
-            log.warn(HttpUtils.getUserAgentHeaderValue(exchange)+"헤더로 넘어온 거");
-            log.warn(HttpUtils.getUserIpHeaderValue(exchange)+"헤더로 넘어온 아이피");
-            log.warn(HttpUtils.getUserIpHeaderValue2(exchange)+"헤더로 넘어온 리모트");
+            String userAgent = HttpUtils.getUserAgentHeaderValue(exchange);
+            String ip = HttpUtils.getUserIpHeaderValue(exchange);
 
             try {
                 jwt = TokenValidator.isValidToken(token);
 
-                String key = jwt.getSubject() +
-                        Objects.requireNonNull(exchange.getRequest().getRemoteAddress()).getAddress().getHostAddress() +
-                        userAgent;
+                String key = jwt.getSubject() + ip + userAgent;
 
                 // 레디스에 유저 아이디 담은 정보가 없다면 , 이미 로그아웃 한 것 따라서 유효하지 않은 토큰으로 보겠음
                 if (Objects.isNull(redisService.getValues(key))) {
