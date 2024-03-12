@@ -28,6 +28,10 @@ public class HttpUtils {
         return exchange.getRequest().getHeaders().getFirst("UserAgent");
     }
 
+    public static String getUserIpHeaderValue(ServerWebExchange exchange) {
+        return exchange.getRequest().getHeaders().getFirst("UserIp");
+    }
+
     public static String getPath(ServerWebExchange exchange) {
         return exchange.getRequest().getURI().getPath();
     }
