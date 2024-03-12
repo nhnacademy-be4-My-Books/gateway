@@ -51,12 +51,22 @@ public class AdminAuthFilter extends AbstractGatewayFilterFactory<AdminAuthFilte
             String token = HttpUtils.getAuthorizationHeaderValue(exchange);
             String originalPath = HttpUtils.getPath(exchange);
 
+            ServerHttpRequest request = exchange.getRequest();
 
             DecodedJWT jwt;
             String userAgent = exchange.getRequest().getHeaders().getFirst("User-Agent");
             log.warn(exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()+"아이피");
             log.warn(exchange.getRequest().getHeaders().getFirst("X-Forwarded-For")+"헤더");
+            log.warn(request.getHeaders().getFirst("Proxy-Client-IP"));
+            log.warn(request.getHeaders().getFirst("WL-Proxy-Client-IP"));
+            log.warn(request.getHeaders().getFirst("HTTP_CLIENT_IP"));
+            log.warn(request.getHeaders().getFirst("HTTP_X_FORWARDED_FOR"));
+            log.warn(request.getHeaders().getFirst("X-Real-IP"));
+            log.warn(request.getHeaders().getFirst("X-RealIP"));
+            log.warn(request.getHeaders().getFirst("REMOTE_ADDR"));
             log.warn(userAgent+"유저에이전트");
+            log.warn(HttpUtils.getUserAgentHeaderValue(exchange)+"헤더로 넘어온 거");
+
 
             try {
                 jwt = TokenValidator.isValidToken(token);
