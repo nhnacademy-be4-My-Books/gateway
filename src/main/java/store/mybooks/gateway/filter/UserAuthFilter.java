@@ -57,10 +57,12 @@ public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.
             String ip = HttpUtils.getUserIpHeaderValue(exchange);
 
             try {
+
                 jwt = TokenValidator.isValidToken(token);
-
+                if (ip.isEmpty()) {
+                    ip = "null";
+                }
                 String key = jwt.getSubject() + ip + userAgent;
-
 
                 // 레디스에 유저 아이디 담은 정보가 없다면 , 이미 로그아웃 한 것 따라서 유효하지 않은 토큰으로 보겠음
                 if (Objects.isNull(redisService.getValues(key))) {
@@ -106,7 +108,6 @@ public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.
                         ErrorMessage.TOKEN_EXPIRED.getMessage()); // 토큰 만료됐음 인증 필요 401
             } catch (JWTVerificationException e) {
                 log.warn("조작");
-
                 return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.UNAUTHORIZED,
                         ErrorMessage.INVALID_TOKEN.getMessage()); // 토큰이 조작됐음 올바르지 않은 요청 401
             }
