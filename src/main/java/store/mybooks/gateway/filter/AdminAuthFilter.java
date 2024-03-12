@@ -67,6 +67,7 @@ public class AdminAuthFilter extends AbstractGatewayFilterFactory<AdminAuthFilte
             log.warn(userAgent+"유저에이전트");
             log.warn(HttpUtils.getUserAgentHeaderValue(exchange)+"헤더로 넘어온 거");
             log.warn(HttpUtils.getUserIpHeaderValue(exchange)+"헤더로 넘어온 아이피");
+            log.warn(HttpUtils.getUserIpHeaderValue2(exchange)+"헤더로 넘어온 리모트");
 
             try {
                 jwt = TokenValidator.isValidToken(token);
