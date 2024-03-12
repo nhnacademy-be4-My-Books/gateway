@@ -4,6 +4,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import java.util.Objects;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.cache.CacheProperties;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -31,6 +32,8 @@ import store.mybooks.gateway.validator.TokenValidator;
  * -----------------------------------------------------------
  * 3/2/24        masiljangajji       최초 생성
  */
+
+@Slf4j
 public class AdminAuthFilter extends AbstractGatewayFilterFactory<AdminAuthFilter.Config> {
 
     private final RedisService redisService;
@@ -48,8 +51,12 @@ public class AdminAuthFilter extends AbstractGatewayFilterFactory<AdminAuthFilte
             String token = HttpUtils.getAuthorizationHeaderValue(exchange);
             String originalPath = HttpUtils.getPath(exchange);
 
+
             DecodedJWT jwt;
             String userAgent = exchange.getRequest().getHeaders().getFirst("User-Agent");
+
+            log.warn(exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()+"아이피");
+            log.warn(userAgent+"유저에이전트");
 
             try {
                 jwt = TokenValidator.isValidToken(token);
@@ -60,6 +67,7 @@ public class AdminAuthFilter extends AbstractGatewayFilterFactory<AdminAuthFilte
 
                 // 레디스에 유저 아이디 담은 정보가 없다면 , 이미 로그아웃 한 것 따라서 유효하지 않은 토큰으로 보겠음
                 if (Objects.isNull(redisService.getValues(key))) {
+                    log.warn("레디스에 유저 아이디 담은 정보가 없음");
                     throw new JWTVerificationException("Logout Token");
                 }
 
@@ -83,12 +91,15 @@ public class AdminAuthFilter extends AbstractGatewayFilterFactory<AdminAuthFilte
                 return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.FORBIDDEN,
                         ErrorMessage.STATUS_IS_LOCK_EXCEPTION.getMessage()); //  토큰은 유효한데 잠금 상태임
             } catch (ForbiddenAccessException e) {
+                log.warn("권한없음");
                 return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.FORBIDDEN,
                         ErrorMessage.INVALID_ACCESS.getMessage()); //  토큰은 유효한데 권한 없음 403
             } catch (TokenExpiredException e) {
+                log.warn("만료");
                 return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.UNAUTHORIZED,
                         ErrorMessage.TOKEN_EXPIRED.getMessage()); // 토큰 만료됐음 인증 필요 401
             } catch (JWTVerificationException e) {
+                log.warn("조작");
                 return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.UNAUTHORIZED,
                         ErrorMessage.INVALID_TOKEN.getMessage()); // 토큰이 조작됐음 올바르지 않은 요청 401
             }
