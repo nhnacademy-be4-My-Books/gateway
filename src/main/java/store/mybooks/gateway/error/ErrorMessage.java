@@ -18,7 +18,8 @@ public enum ErrorMessage {
     TOKEN_EXPIRED("Token has expired"),
     INVALID_TOKEN("Invalid token"),
     INVALID_ACCESS("Access forbidden"),
-    INACTIVE_USER("User is inactive");
+    STATUS_IS_DORMANT_EXCEPTION("User Status is DORMANT"),
+    STATUS_IS_LOCK_EXCEPTION("User Status is Lock");
 
     private final String message;
 
