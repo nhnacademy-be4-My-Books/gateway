@@ -59,17 +59,12 @@ public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.
             try {
 
                 jwt = TokenValidator.isValidToken(token);
+
                 if (ip.isEmpty()) {
                     ip = "null";
                 }
                 String key = jwt.getSubject() + ip + userAgent;
-
-                // 레디스에 유저 아이디 담은 정보가 없다면 , 이미 로그아웃 한 것 따라서 유효하지 않은 토큰으로 보겠음
-                if (Objects.isNull(redisService.getValues(key))) {
-                    log.warn("레디스에 유저 아이디 담은 정보가 없음");
-                    throw new JWTVerificationException("Logout Token");
-                }
-
+                redisService.isValidateUser(key);
 
                 if (Arrays.stream(Config.EXCLUDE_STATUS_URL)
                         .noneMatch(originalPath::contains)) {
@@ -98,7 +93,6 @@ public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.
                         ErrorMessage.STATUS_IS_LOCK_EXCEPTION.getMessage()); //  토큰은 유효한데 잠금 상태임
             } catch (ForbiddenAccessException e) {
                 log.warn("권한없음");
-
                 return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.FORBIDDEN,
                         ErrorMessage.INVALID_ACCESS.getMessage()); //  토큰은 유효한데 권한 없음 403
             } catch (TokenExpiredException e) {

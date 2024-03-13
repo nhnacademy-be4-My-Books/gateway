@@ -62,12 +62,7 @@ public class AdminAuthFilter extends AbstractGatewayFilterFactory<AdminAuthFilte
                     ip = "null";
                 }
                 String key = jwt.getSubject() + ip + userAgent;
-
-                // 레디스에 유저 아이디 담은 정보가 없다면 , 이미 로그아웃 한 것 따라서 유효하지 않은 토큰으로 보겠음
-                if (Objects.isNull(redisService.getValues(key))) {
-                    log.warn("레디스에 유저 아이디 담은 정보가 없음");
-                    throw new JWTVerificationException("Logout Token");
-                }
+                redisService.isValidateUser(key);
 
                 TokenValidator.isValidStatus(jwt.getClaim("status").asString());
                 TokenValidator.isValidAuthority(jwt.getClaim("authority").asString(), Config.ROLE_ADMIN);
