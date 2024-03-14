@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import store.mybooks.gateway.config.JwtConfig;
 import store.mybooks.gateway.config.KeyConfig;
 import store.mybooks.gateway.exception.ForbiddenAccessException;
-import store.mybooks.gateway.exception.InvalidStatusException;
 import store.mybooks.gateway.exception.StatusIsDormancyException;
 import store.mybooks.gateway.exception.StatusIsLockException;
 

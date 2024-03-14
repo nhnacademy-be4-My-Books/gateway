@@ -1,13 +1,11 @@
 package store.mybooks.gateway.config;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import store.mybooks.gateway.filter.AdminAuthFilter;
-import store.mybooks.gateway.filter.UserAuthFilter;
+import store.mybooks.gateway.filter.AuthFilter;
 import store.mybooks.gateway.redis.RedisService;
 
 /**
@@ -46,11 +44,11 @@ public class GatewayConfig {
                 .route("auth", r -> r.path("/auth/**") // 전부 허용 할 것
                         .uri(urlProperties.getAuth()))
                 .route("api_user", p -> p.path("/api/member/**") // 유저 권한이 필요 한 경우
-                        .filters(f -> f.filter(new UserAuthFilter(redisService).apply(new UserAuthFilter.Config())))
+                        .filters(f -> f.filter(new AuthFilter(redisService).apply(new AuthFilter.Config())))
                         .uri(RESOURCE)
                 )
                 .route("api_admin", p -> p.path("/api/admin/**") // 어드민 권한이 필요 한 경우
-                        .filters(f -> f.filter(new AdminAuthFilter(redisService).apply(new AdminAuthFilter.Config())))
+                        .filters(f -> f.filter(new AuthFilter(redisService).apply(new AuthFilter.Config())))
                         .uri(RESOURCE)
                 )
                 .route("api_all", p -> p.path("/api/**") // 권한이 필요 없는 경우
