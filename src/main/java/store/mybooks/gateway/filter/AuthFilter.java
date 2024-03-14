@@ -15,6 +15,7 @@ import store.mybooks.gateway.exception.StatusIsDormancyException;
 import store.mybooks.gateway.exception.StatusIsLockException;
 import store.mybooks.gateway.handler.ErrorResponseHandler;
 import store.mybooks.gateway.redis.RedisService;
+import store.mybooks.gateway.utils.AuthUtils;
 import store.mybooks.gateway.utils.HttpUtils;
 import store.mybooks.gateway.validator.TokenValidator;
 
@@ -25,7 +26,7 @@ import store.mybooks.gateway.validator.TokenValidator;
  * date           : 2/28/24<br>
  * description    :
  * ===========================================================
- * DATE              AUTHOR             NOTE
+ * DATE              AUTHOR             NOTEE
  * -----------------------------------------------------------
  * 2/28/24        masiljangajji       최초 생성
  */
@@ -68,24 +69,15 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
                 }
 
                 if (originalPath.contains("/api/admin/")) {
+                    TokenValidator.isValidAuthority(jwt.getClaim("authority").asString(), Config.ROLE_ADMIN);
+
+                    modifiedRequest = AuthUtils.getAdminRequest(exchange, originalPath);
+
+                } else {
+
                     TokenValidator.isValidAuthority(jwt.getClaim("authority").asString(), Config.ROLE_USER,
                             Config.ROLE_ADMIN);
-
-                    modifiedRequest = exchange.getRequest().mutate()
-                            .path(originalPath.replace("/api/admin/", "/api/")) // 새로운 URL 경로 설정
-                            .build();
-
-                    return chain.filter(exchange.mutate()
-                            .request(modifiedRequest)
-                            .build());
-                }else {
-
-                    TokenValidator.isValidAuthority(jwt.getClaim("authority").asString(), Config.ROLE_USER);
-
-                    modifiedRequest = exchange.getRequest().mutate()
-                            .path(originalPath.replace("/api/member/", "/api/")) // 새로운 URL 경로 설정
-                            .header("X-User-Id", redisService.getValues(key)) // 유저 정보 보내기
-                            .build();
+                    modifiedRequest = AuthUtils.getUserRequest(exchange, originalPath, key, redisService);
                 }
 
 
