@@ -15,6 +15,7 @@ import org.springframework.web.server.ServerWebExchange;
  */
 public class HttpUtils {
 
+    private HttpUtils(){}
     public static String getAuthorizationHeaderValue(ServerWebExchange exchange) {
         return exchange.getRequest().getHeaders().getFirst("Authorization");
     }

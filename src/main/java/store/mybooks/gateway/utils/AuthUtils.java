@@ -17,6 +17,7 @@ import store.mybooks.gateway.redis.RedisService;
  */
 public class AuthUtils {
 
+    private AuthUtils(){}
 
     public static ServerHttpRequest getAdminRequest(ServerWebExchange exchange, String originalPath) {
 
