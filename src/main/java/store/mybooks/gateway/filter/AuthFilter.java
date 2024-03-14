@@ -4,19 +4,14 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import java.util.Arrays;
-import java.util.Objects;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.bouncycastle.jcajce.provider.asymmetric.rsa.RSAUtil;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import store.mybooks.gateway.error.ErrorMessage;
 import store.mybooks.gateway.exception.ForbiddenAccessException;
-import store.mybooks.gateway.exception.InvalidStatusException;
 import store.mybooks.gateway.exception.StatusIsDormancyException;
 import store.mybooks.gateway.exception.StatusIsLockException;
 import store.mybooks.gateway.handler.ErrorResponseHandler;
@@ -71,19 +66,28 @@ public class UserAuthFilter extends AbstractGatewayFilterFactory<UserAuthFilter.
                     TokenValidator.isValidStatus(jwt.getClaim("status").asString());
                 }
 
-                TokenValidator.isValidAuthority(jwt.getClaim("authority").asString(), Config.ROLE_USER,
-                        Config.ROLE_ADMIN);
+                if (originalPath.contains("admin")) {
+                    TokenValidator.isValidAuthority(jwt.getClaim("authority").asString(), Config.ROLE_USER,
+                            Config.ROLE_ADMIN);
+
+                    ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
+                            .path(originalPath.replace("/api/admin/", "/api/")) // 새로운 URL 경로 설정
+                            .build();
+
+                    return chain.filter(exchange.mutate()
+                            .request(modifiedRequest)
+                            .build());
+                }
+                TokenValidator.isValidAuthority(jwt.getClaim("authority").asString(), Config.ROLE_USER);
 
                 ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
                         .path(originalPath.replace("/api/member/", "/api/")) // 새로운 URL 경로 설정
                         .header("X-User-Id", redisService.getValues(key)) // 유저 정보 보내기
                         .build();
 
-                ServerWebExchange modifiedExchange = exchange.mutate()
+                return chain.filter(exchange.mutate()
                         .request(modifiedRequest)
-                        .build();
-
-                return chain.filter(modifiedExchange);
+                        .build());
 
             } catch (StatusIsDormancyException e) {
                 return ErrorResponseHandler.handleInvalidToken(exchange, HttpStatus.FORBIDDEN,

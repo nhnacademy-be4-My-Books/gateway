@@ -1,7 +1,6 @@
 package store.mybooks.gateway.redis;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import java.time.Duration;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
