@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import store.mybooks.gateway.config.JwtConfig;
 import store.mybooks.gateway.config.KeyConfig;
 import store.mybooks.gateway.exception.ForbiddenAccessException;
-import store.mybooks.gateway.exception.InvalidStatusException;
 import store.mybooks.gateway.exception.StatusIsDormancyException;
 import store.mybooks.gateway.exception.StatusIsLockException;
 
@@ -37,17 +36,15 @@ public class TokenValidator {
     private static final String STATUS_ACTIVE = "활성";
 
     @Autowired
-    public TokenValidator(JwtConfig jwtConfig, KeyConfig keyConfig) {
+    private TokenValidator(JwtConfig jwtConfig, KeyConfig keyConfig) {
         Algorithm algorithm = Algorithm.HMAC512(keyConfig.keyStore(jwtConfig.getSecret()));
         jwtVerifier = JWT.require(algorithm).build();
     }
 
     public static void isValidStatus(String status) {
 
-        // 휴면상태
         if (status.equals(STATUS_DORMANCY)) {
             throw new StatusIsDormancyException();
-            // 잠금상태
         } else if (status.equals(STATUS_LOCK)) {
             throw new StatusIsLockException();
         } else if (!status.equals(STATUS_ACTIVE)) {
