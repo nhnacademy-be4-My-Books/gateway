@@ -52,7 +52,6 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
             String ip = HttpUtils.getUserIpHeaderValue(exchange);
 
             try {
-
                 jwt = TokenValidator.isValidToken(token);
 
                 ServerHttpRequest modifiedRequest;
@@ -70,7 +69,6 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
 
                 if (originalPath.contains("/api/admin/")) {
                     TokenValidator.isValidAuthority(jwt.getClaim("authority").asString(), Config.ROLE_ADMIN);
-
                     modifiedRequest = AuthUtils.getAdminRequest(exchange, originalPath);
 
                 } else {
